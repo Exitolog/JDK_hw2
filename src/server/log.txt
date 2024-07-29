@@ -6,3 +6,5 @@ Ivan Ivanovich: sada
 Ivan Ivanovich: as
 Kostya: О! какие люди!) Приветствую
 Test: Привет
+Ivan Ivanovich: Привет, Петя!
+Petr_Jekovich: Привет, Вань!

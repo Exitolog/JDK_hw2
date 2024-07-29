@@ -1,6 +1,7 @@
 package server.server;
 
 import server.client.ClientGUI;
+import server.repository.Repositable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,90 +13,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 //класс требуется разделить на GUI, controller и repository (смотри схему проекта)
-public class ServerWindow extends JFrame {
-    public static final int WIDTH = 400;
-    public static final int HEIGHT = 300;
-    public static final String LOG_PATH = "src/server/log.txt";
+public class ServerWindow extends JFrame{
+    private static final int WIDTH = 400;
+    private static final int HEIGHT = 300;
 
-    List<ClientGUI> clientGUIList;
+    private ServerController serverController;
+    private JButton btnStart, btnStop;
+    private JTextArea log;
+    private static final String LOG_PATH = "src/server/log.txt";
 
-    JButton btnStart, btnStop;
-    JTextArea log;
-    boolean work;
 
-    public ServerWindow(){
-        clientGUIList = new ArrayList<>();
+    public ServerWindow() {
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(WIDTH, HEIGHT);
         setResizable(false);
         setTitle("Chat server");
         setLocationRelativeTo(null);
-
         createPanel();
-
         setVisible(true);
     }
 
-    public boolean connectUser(ClientGUI clientGUI){
-        if (!work){
-            return false;
-        }
-        clientGUIList.add(clientGUI);
-        return true;
+    public JTextArea getLog() {
+        return log;
     }
 
-    public String getLog() {
-        return readLog();
-    }
-
-    public void disconnectUser(ClientGUI clientGUI){
-        clientGUIList.remove(clientGUI);
-        if (clientGUI != null){
-            clientGUI.disconnectedFromServer();
-        }
-    }
-
-    public void message(String text){
-        if (!work){
-            return;
-        }
-        appendLog(text);
-        answerAll(text);
-        saveInLog(text);
-    }
-
-    private void answerAll(String text){
-        for (ClientGUI clientGUI: clientGUIList){
-            clientGUI.answer(text);
-        }
-    }
-
-    private void saveInLog(String text){
-        try (FileWriter writer = new FileWriter(LOG_PATH, true)){
-            writer.write(text);
-            writer.write("\n");
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private String readLog(){
-        StringBuilder stringBuilder = new StringBuilder();
-        try (FileReader reader = new FileReader(LOG_PATH)){
-            int c;
-            while ((c = reader.read()) != -1){
-                stringBuilder.append((char) c);
-            }
-            stringBuilder.delete(stringBuilder.length()-1, stringBuilder.length());
-            return stringBuilder.toString();
-        } catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private void appendLog(String text){
+    private void appendLog(String text) {
         log.append(text + "\n");
     }
 
@@ -113,10 +56,10 @@ public class ServerWindow extends JFrame {
         btnStart.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (work){
+                if (serverController.isWork()) {
                     appendLog("Сервер уже был запущен");
                 } else {
-                    work = true;
+                    serverController.setWork(true);
                     appendLog("Сервер запущен!");
                 }
             }
@@ -125,12 +68,13 @@ public class ServerWindow extends JFrame {
         btnStop.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!work){
+                if (!serverController.isWork()) {
                     appendLog("Сервер уже был остановлен");
                 } else {
-                    work = false;
-                    while (!clientGUIList.isEmpty()){
-                        disconnectUser(clientGUIList.get(clientGUIList.size()-1));
+                    serverController.setWork(false);
+                    while (!serverController.clientGUIList.isEmpty()) {
+                        serverController.disconnectUser(serverController.clientGUIList.
+                                get(serverController.clientGUIList.size() - 1));
                     }
                     appendLog("Сервер остановлен!");
                 }
@@ -140,5 +84,14 @@ public class ServerWindow extends JFrame {
         panel.add(btnStart);
         panel.add(btnStop);
         return panel;
+    }
+
+    public void setServerController(ServerController serverController) {
+        this.serverController = serverController;
+    }
+
+
+    public void showMessage(String message) {
+        serverController.message(message);
     }
 }

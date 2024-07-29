@@ -1,5 +1,8 @@
 package server.client;
 
+import server.repository.Repository;
+import server.server.ServerController;
+
 /**
  * класс содержащий логику работы клиента
  *
@@ -11,6 +14,10 @@ public class ClientController {
     private String name;
     private ClientView clientView;
     private ServerController server;
+    private Repository repository;
+
+
+
 
     //сеттеры
     public void setClientView(ClientView clientView) {
@@ -19,6 +26,7 @@ public class ClientController {
 
     public void setServer(ServerController server) {
         this.server = server;
+        this.repository = server.getRepository();
     }
 
     /**
@@ -31,7 +39,7 @@ public class ClientController {
         if (server.connectUser(this)){
             showOnWindow("Вы успешно подключились!\n");
             connected = true;
-            String log = server.getHistory();
+            String log = repository.getHistory();
             if (log != null){
                 showOnWindow(log);
             }
